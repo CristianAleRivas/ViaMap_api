@@ -5,8 +5,8 @@ const recorridoRouter = Router();
 
 recorridoRouter.post('/', async(req, res) => {
     try{
-        const estacion = await RecorridoService.create(req.body);
-        res.status(201).json(estacion);
+        const recorrido = await RecorridoService.create(req.body);
+        res.status(201).json(recorrido);
     }catch (err){
         res.status(500).json({error: err.message});
     }
@@ -14,8 +14,8 @@ recorridoRouter.post('/', async(req, res) => {
 
 recorridoRouter.get('/', async(req, res) => {
     try{
-        const estacion = await RecorridoService.getAll();
-        res.json(estacion);
+        const recorrido = await RecorridoService.getAll();
+        res.json(recorrido);
     }catch (err){
         res.status(500).json({error: err.message});
     }
@@ -23,9 +23,9 @@ recorridoRouter.get('/', async(req, res) => {
 
 recorridoRouter.get('/:id', async(req, res) => {
     try{
-        const estacion = await RecorridoService.getById(req.params.id);
-        if(!estacion) return res.status(404).json({error: 'No encontrado'});
-        res.json(estacion);
+        const recorrido = await RecorridoService.getById(req.params.id);
+        if(!recorrido) return res.status(404).json({error: 'No encontrado'});
+        res.json(recorrido);
     }catch (err){
         res.status(500).json({error: err.message});
     }
@@ -33,8 +33,8 @@ recorridoRouter.get('/:id', async(req, res) => {
 
 recorridoRouter.put('/:id', async(req, res) => {
     try{
-        const estacion = await RecorridoService.update(req.params.id, req.body);
-        res.json(estacion);
+        const recorrido = await RecorridoService.update(req.params.id, req.body);
+        res.json(recorrido);
     }catch (err){
         res.status(500).json({error: err.message});
     }

@@ -5,8 +5,8 @@ const imagenesReliRouter = Router();
 
 imagenesReliRouter.post('/', async(req, res) => {
     try{
-        const estacion = await ImagenRService.create(req.body);
-        res.status(201).json(estacion);
+        const imagenReli = await ImagenRService.create(req.body);
+        res.status(201).json(imagenReli);
     }catch (err){
         res.status(500).json({error: err.message});
     }
@@ -14,8 +14,8 @@ imagenesReliRouter.post('/', async(req, res) => {
 
 imagenesReliRouter.get('/', async(req, res) => {
     try{
-        const estacion = await ImagenRService.getAll();
-        res.json(estacion);
+        const imagenReli = await ImagenRService.getAll();
+        res.json(imagenReli);
     }catch (err){
         res.status(500).json({error: err.message});
     }
@@ -23,9 +23,9 @@ imagenesReliRouter.get('/', async(req, res) => {
 
 imagenesReliRouter.get('/:id', async(req, res) => {
     try{
-        const estacion = await ImagenRService.getById(req.params.id);
-        if(!estacion) return res.status(404).json({error: 'No encontrado'});
-        res.json(estacion);
+        const imagenReli = await ImagenRService.getById(req.params.id);
+        if(!imagenReli) return res.status(404).json({error: 'No encontrado'});
+        res.json(imagenReli);
     }catch (err){
         res.status(500).json({error: err.message});
     }
@@ -33,8 +33,8 @@ imagenesReliRouter.get('/:id', async(req, res) => {
 
 imagenesReliRouter.put('/:id', async(req, res) => {
     try{
-        const estacion = await ImagenRService.update(req.params.id, req.body);
-        res.json(estacion);
+        const imagenReli = await ImagenRService.update(req.params.id, req.body);
+        res.json(imagenReli);
     }catch (err){
         res.status(500).json({error: err.message});
     }
