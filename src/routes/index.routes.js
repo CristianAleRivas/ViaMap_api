@@ -5,7 +5,7 @@ import eventoRouter from './evento.routes.js';
 import gruposRouter from './grupos.routes.js';
 import imagenesReliRouter from './imagenReligiosa.routes.js';
 import recorridoRouter from './recorrido.routes.js'
-
+import mapRouter from './map.routes.js';
 
 const router = Router();
 
@@ -15,6 +15,6 @@ router.use('/estacion', estacionRouter);
 router.use('/grupos', gruposRouter);
 router.use('/imgReligiosa', imagenesReliRouter);
 router.use('/recorrido', recorridoRouter);
-
+router.use('/map', mapRouter);
 
 export default router;
