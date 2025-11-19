@@ -107,6 +107,7 @@ secrets/
 credentials/
 auth/
 keys/
+serviceAccount/viamap-firebase-adminsdk.json
 
 # Archivos de uploads y contenido de usuario
 uploads/
