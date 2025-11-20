@@ -8,6 +8,7 @@ import recorridoRouter from './recorrido.routes.js'
 import procesionRouter from './procesion.routes.js';
 import relevoRouter from './relevo.routes.js';
 import mapRouter from './map.routes.js';
+import grupQueryRouter from './grupQuery.routes.js';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/recorrido', recorridoRouter);
 router.use('/procesion', procesionRouter);
 router.use('/relevo', relevoRouter);
 router.use('/map', mapRouter);
+router.use('/grupQ', grupQueryRouter);
 
 export default router;
