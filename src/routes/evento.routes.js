@@ -21,6 +21,15 @@ router.get('/', async (req, res)=>{
     }
 });
 
+router.get('/upcoming', async (req, res)=>{
+    try{
+        const eventos = await EventoService.getUpcoming();
+        res.json({ ok: true, data: eventos });
+    }catch (err){
+        res.status(500).json({ ok: false, error: err.message });
+    }
+});
+
 router.get('/:id', async (req, res)=>{
     try{
         const evento = await EventoService.getById(req.params.id);

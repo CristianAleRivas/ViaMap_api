@@ -16,7 +16,41 @@ const EventoService = {
 
     async getAll(){
         const snapshot = await db.collection(collection).get();
-        return snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+        return snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                fecha: data.fecha?.toDate ? data.fecha.toDate() : data.fecha
+            };
+        });
+    },
+
+    async getUpcoming(){
+        const snapshot = await db.collection(collection).get();
+        const eventos = snapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+                id: doc.id,
+                ...data,
+                // Convertir Timestamp a Date si es necesario
+                fecha: data.fecha?.toDate ? data.fecha.toDate() : data.fecha
+            };
+        });
+        
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        
+        return eventos.filter(evento => {
+            if (!evento.fecha) return false;
+            
+            const fechaEvento = new Date(evento.fecha);
+            fechaEvento.setHours(0, 0, 0, 0);
+            
+            return fechaEvento >= hoy;
+        }).sort((a, b) => {
+            return new Date(a.fecha) - new Date(b.fecha);
+        });
     },
     
     async getById(id){

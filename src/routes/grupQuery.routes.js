@@ -5,4 +5,3 @@ const grupQueryRouter = Router();
 grupQueryRouter.post("/procesiones", getGruposDeProcesiones);
 
 export default grupQueryRouter;
-
