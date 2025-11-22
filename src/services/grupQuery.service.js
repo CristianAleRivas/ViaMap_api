@@ -1,53 +1,65 @@
 import { db } from "../db/firebaseConfig.js";
 
-export const GrupQueryServices = async (procesionId) => {
+export const GrupQueryServices = async (procesionIds = []) => {
 
-    const procesionSnap = await db.collection("procesiones").doc(procesionId).get();
-    if (!procesionSnap.exists) {
-        throw new Error("No existe una procesión con ese ID");
+    if (!Array.isArray(procesionIds) || procesionIds.length === 0) {
+        throw new Error("Debes enviar un array de IDs de procesiones");
     }
 
-    const procesionData = procesionSnap.data();
-    const grupoRef = procesionData.grupoActual;
+    // Procesamos todas las IDs en paralelo
+    const resultados = await Promise.all(
+        procesionIds.map(async (procesionId) => {
 
-    if (!grupoRef) {
-        throw new Error("La procesión no tiene un grupo asignado");
-    }
+            const procesionSnap = await db.collection("procesiones").doc(procesionId).get();
+            if (!procesionSnap.exists) {
+                return { error: `No existe la procesión con ID: ${procesionId}` }; 
+            }
 
-    const grupoSnap = await grupoRef.get();
-    if (!grupoSnap.exists) {
-        throw new Error("El grupo referenciado no existe");
-    }
+            const procesionData = procesionSnap.data();
+            const grupoRef = procesionData.grupoActual;
 
-    const grupoData = grupoSnap.data();
-    const imagenRef = grupoData.idImagen;
+            if (!grupoRef) {
+                return { error: `La procesión ${procesionId} no tiene un grupo asignado` };
+            }
 
-    if (!imagenRef) {
-        throw new Error("El grupo no tiene una imagen religiosa asignada");
-    }
+            const grupoSnap = await grupoRef.get();
+            if (!grupoSnap.exists) {
+                return { error: `El grupo referenciado no existe para procesión ${procesionId}` };
+            }
 
-    const imagenSnap = await imagenRef.get();
-    if (!imagenSnap.exists) {
-        throw new Error("La imagen religiosa referenciada no existe");
-    }
+            const grupoData = grupoSnap.data();
+            const imagenRef = grupoData.idImagen;
 
-    const imagenData = imagenSnap.data();
+            if (!imagenRef) {
+                return { error: `El grupo de la procesión ${procesionId} no tiene imagen religiosa` };
+            }
 
-    const ultimaActualizacion = procesionData.ultimaActualizacion?.toDate?.();
-    const fechaFormateada = ultimaActualizacion
-        ? ultimaActualizacion.toLocaleString("es-SV", {
-            dateStyle: "medium",
-            timeStyle: "short",
-            timeZone: "America/El_Salvador"
+            const imagenSnap = await imagenRef.get();
+            if (!imagenSnap.exists) {
+                return { error: `La imagen religiosa no existe para procesión ${procesionId}` };
+            }
+
+            const imagenData = imagenSnap.data();
+
+            const ultimaActualizacion = procesionData.ultimaActualizacion?.toDate?.();
+            const fechaFormateada = ultimaActualizacion
+                ? ultimaActualizacion.toLocaleString("es-SV", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                      timeZone: "America/El_Salvador",
+                  })
+                : null;
+
+            return {
+                procesionId,
+                imagenUri: imagenData.imgURL ?? null,
+                groupNumber: grupoData.numeroGrupo ?? null,
+                headLine: imagenData.nombre ?? null,
+                leader: grupoData.jefeGrupo ?? null,
+                lastUpdateText: fechaFormateada,
+            };
         })
-        : null;
+    );
 
-    return {
-        imagenUri: imagenData.imgURL ?? null,
-        groupNumber: grupoData.numeroGrupo ?? null,
-        headLine: imagenData.nombre ?? null,
-        leader: grupoData.jefeGrupo ?? null,
-        lastUpdateText: fechaFormateada
-    };
+    return resultados;
 };
-
