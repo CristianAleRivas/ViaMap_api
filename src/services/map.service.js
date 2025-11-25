@@ -49,5 +49,6 @@ export const obtenerRecorridoYEstaciones = async (procesionId) => {
   return {
     recorrido,
     estaciones,
+    activo: procesionData.activo || false,
   };
 };
