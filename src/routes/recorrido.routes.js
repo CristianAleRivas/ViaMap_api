@@ -1,52 +1,39 @@
 import { Router } from "express";
-import RecorridoService from "../services/recorrido.service.js";
+import {
+    createRecorrido,
+    getAllRecorridos,
+    getRecorridoById,
+    duplicateRecorrido,
+    updateRecorrido,
+    deleteRecorrido,
+    createRecorridoWithEstaciones,
+    addEstacion,
+    getEstaciones,
+    deleteEstacion,
+    getRecorridoCompleto,
+    updateEstacion,
+    updateRecorridoCompleto
+} from '../controllers/recorrido.controller.js';
 
 const recorridoRouter = Router();
 
-recorridoRouter.post('/', async(req, res) => {
-    try{
-        const recorrido = await RecorridoService.create(req.body);
-        res.status(201).json(recorrido);
-    }catch (err){
-        res.status(500).json({error: err.message});
-    }
-});
+// IMPORTANTE: Rutas específicas ANTES de rutas con parámetros
+recorridoRouter.post('/completo', createRecorridoWithEstaciones); // Crear con estaciones
+recorridoRouter.get('/', getAllRecorridos);
+recorridoRouter.post('/', createRecorrido);
 
-recorridoRouter.get('/', async(req, res) => {
-    try{
-        const recorrido = await RecorridoService.getAll();
-        res.json(recorrido);
-    }catch (err){
-        res.status(500).json({error: err.message});
-    }
-});
+// Rutas con parámetros específicos
+recorridoRouter.get('/:id/completo', getRecorridoCompleto); // Obtener recorrido con estaciones
+recorridoRouter.put('/:id/completo', updateRecorridoCompleto); // Actualizar recorrido completo
+recorridoRouter.post('/:id/duplicate', duplicateRecorrido);
+recorridoRouter.post('/:id/estaciones', addEstacion); // Agregar estación
+recorridoRouter.get('/:id/estaciones', getEstaciones); // Listar estaciones
+recorridoRouter.put('/:recorridoId/estaciones/:estacionId', updateEstacion); // Actualizar estación
+recorridoRouter.delete('/:recorridoId/estaciones/:estacionId', deleteEstacion); // Eliminar estación
 
-recorridoRouter.get('/:id', async(req, res) => {
-    try{
-        const recorrido = await RecorridoService.getById(req.params.id);
-        if(!recorrido) return res.status(404).json({error: 'No encontrado'});
-        res.json(recorrido);
-    }catch (err){
-        res.status(500).json({error: err.message});
-    }
-});
-
-recorridoRouter.put('/:id', async(req, res) => {
-    try{
-        const recorrido = await RecorridoService.update(req.params.id, req.body);
-        res.json(recorrido);
-    }catch (err){
-        res.status(500).json({error: err.message});
-    }
-});
-
-recorridoRouter.delete('/:id', async(req, res) => {
-    try{
-        const result = await RecorridoService.delete(req.params.id);
-        res.json(result);
-    }catch (err){
-        res.status(500).json({error: err.message});
-    }
-});
+// Rutas con parámetros genéricos AL FINAL
+recorridoRouter.get('/:id', getRecorridoById);
+recorridoRouter.put('/:id', updateRecorrido); // Actualizar solo coordenadas/nombre/descripción
+recorridoRouter.delete('/:id', deleteRecorrido)
 
 export default recorridoRouter;

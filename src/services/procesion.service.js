@@ -1,17 +1,42 @@
 import {db} from '../db/firebaseConfig.js';
+import admin from 'firebase-admin';
 
 const collection = 'procesiones';
 
 const ProcesionService = {
     async create(data) {
-        const {ubicacionActual, entradaUbi, salidaUbi, fecha, grupoActual, horaEntrada, horaSalida, recorrido, titulo} = data;
-        if(!ubicacionActual || !entradaUbi || !salidaUbi || !fecha || !grupoActual || !horaEntrada || !horaSalida || !recorrido || !titulo){
-            throw new Error("Por favor llena todos los campos!");
+        const {ubicacionActual, entradaUbi, salidaUbi, fecha, grupoActual, horaEntrada, horaSalida, recorridoId, titulo, activo} = data;
+        
+        if(!titulo || !recorridoId){
+            throw new Error("El título y el ID del recorrido son obligatorios");
         }
 
-        const procesionData = {ubicacionActual, entradaUbi, salidaUbi, fecha, grupoActual, horaEntrada, horaSalida, recorrido, titulo};
+        // Crear referencia al recorrido
+        const recorridoRef = db.collection('recorridos').doc(recorridoId);
+        
+        // Verificar que el recorrido existe
+        const recorridoSnap = await recorridoRef.get();
+        if (!recorridoSnap.exists) {
+            throw new Error("El recorrido especificado no existe");
+        }
+
+        const procesionData = {
+            titulo,
+            recorrido: recorridoRef, // Guardar como referencia
+            ubicacionActual: ubicacionActual || null,
+            entradaUbi: entradaUbi || null,
+            salidaUbi: salidaUbi || null,
+            fecha: fecha || null,
+            grupoActual: grupoActual || null,
+            horaEntrada: horaEntrada || null,
+            horaSalida: horaSalida || null,
+            activo: activo !== undefined ? activo : false,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            ultimaActualizacion: admin.firestore.FieldValue.serverTimestamp()
+        };
+        
         const docRef = await db.collection(collection).add(procesionData);
-        return {id: docRef.id, ...procesionData};
+        return {id: docRef.id, recorridoId, ...data};
     },
 
     async getAll(){
