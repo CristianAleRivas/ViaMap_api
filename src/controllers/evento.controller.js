@@ -56,3 +56,21 @@ export const deleteEvento = async (req, res) => {
         res.status(500).json({ ok: false, error: error.message });
     }
 };
+
+export const getEventosByTipo = async (req, res) => {
+    try {
+        const eventos = await EventoService.getByTipo(req.params.tipo);
+        res.json({ ok: true, data: eventos });
+    } catch (error) {
+        res.status(400).json({ ok: false, error: error.message });
+    }
+};
+
+export const getUpcomingEventosByTipo = async (req, res) => {
+    try {
+        const eventos = await EventoService.getUpcomingByTipo(req.params.tipo);
+        res.json({ ok: true, data: eventos });
+    } catch (error) {
+        res.status(400).json({ ok: false, error: error.message });
+    }
+};

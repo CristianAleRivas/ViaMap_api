@@ -21,7 +21,7 @@ router.use('/grupos', gruposRouter);
 router.use('/imgReligiosa', imagenesReliRouter);
 router.use('/recorridos', recorridoRouter);
 router.use('/procesiones', procesionRouter);
-router.use('/relevo', relevoRouter);
+router.use('/relevos', relevoRouter);
 router.use('/map', mapRouter);
 router.use('/grupQ', grupQueryRouter);
 
