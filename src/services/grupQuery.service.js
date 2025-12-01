@@ -16,8 +16,9 @@ export const GrupQueryServices = async (procesionIds = []) => {
             }
 
             const procesionData = procesionSnap.data();
+            
+            // Obtener grupo
             const grupoRef = procesionData.grupoActual;
-
             if (!grupoRef) {
                 return { error: `La procesión ${procesionId} no tiene un grupo asignado` };
             }
@@ -28,10 +29,11 @@ export const GrupQueryServices = async (procesionIds = []) => {
             }
 
             const grupoData = grupoSnap.data();
-            const imagenRef = grupoData.idImagen;
 
+            // Obtener imagen directamente desde la procesión (ya no está en grupo)
+            const imagenRef = procesionData.imagenId;
             if (!imagenRef) {
-                return { error: `El grupo de la procesión ${procesionId} no tiene imagen religiosa` };
+                return { error: `La procesión ${procesionId} no tiene imagen asignada` };
             }
 
             const imagenSnap = await imagenRef.get();
@@ -56,6 +58,8 @@ export const GrupQueryServices = async (procesionIds = []) => {
                 groupNumber: grupoData.numeroGrupo ?? null,
                 headLine: imagenData.nombre ?? null,
                 leader: grupoData.jefeGrupo ?? null,
+                categoria: grupoData.categoria ?? null,
+                nombreHermandad: grupoData.nombreHermandad ?? null,
                 lastUpdateText: fechaFormateada,
             };
         })

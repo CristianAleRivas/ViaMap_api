@@ -23,7 +23,8 @@ const EventoService = {
             'Título': Título,
             'fecha': fecha instanceof admin.firestore.Timestamp ? fecha : admin.firestore.Timestamp.fromDate(new Date(fecha)),
             'hora': hora,
-            'tipo-evento': tipoEvento
+            'tipo-evento': tipoEvento,
+            'descripcion': data.descripcion || null,
         };
 
         // Agregar campos específicos según el tipo
@@ -45,16 +46,46 @@ const EventoService = {
         return {id: docRef.id, ...this._serializeEvento(eventoData)};
     },
 
+    // Helper para obtener imagen según tipo-evento
+    async _getImagenByTipo(tipoEvento) {
+        const imagenSnapshot = await db.collection('imagen-evento')
+            .where('tipo-evento', '==', tipoEvento)
+            .limit(1)
+            .get();
+        
+        if (imagenSnapshot.empty) {
+            return null;
+        }
+
+        const imagenDoc = imagenSnapshot.docs[0];
+        const imagenData = imagenDoc.data();
+        return {
+            id: imagenDoc.id,
+            imagenUrl: imagenData.imagenUrl,
+            'tipo-evento': imagenData['tipo-evento']
+        };
+    },
+
     // Obtener todos los eventos (futuros y pasados)
     async getAll() {
         const snapshot = await db.collection(collection)
             .orderBy('fecha', 'desc')
             .get();
         
-        return snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...this._serializeEvento(doc.data())
-        }));
+        const eventos = await Promise.all(
+            snapshot.docs.map(async (doc) => {
+                const data = doc.data();
+                const imagen = await this._getImagenByTipo(data['tipo-evento']);
+                
+                return {
+                    id: doc.id,
+                    ...this._serializeEvento(data),
+                    imagen
+                };
+            })
+        );
+
+        return eventos;
     },
 
     // Obtener solo eventos futuros (no vencidos)
@@ -66,10 +97,20 @@ const EventoService = {
             .orderBy('fecha', 'asc')
             .get();
         
-        return snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...this._serializeEvento(doc.data())
-        }));
+        const eventos = await Promise.all(
+            snapshot.docs.map(async (doc) => {
+                const data = doc.data();
+                const imagen = await this._getImagenByTipo(data['tipo-evento']);
+                
+                return {
+                    id: doc.id,
+                    ...this._serializeEvento(data),
+                    imagen
+                };
+            })
+        );
+
+        return eventos;
     },
 
     // Obtener eventos por tipo (todos)
@@ -77,6 +118,9 @@ const EventoService = {
         if (!TIPOS_EVENTO.includes(tipo)) {
             throw new Error(`Tipo inválido. Debe ser: ${TIPOS_EVENTO.join(', ')}`);
         }
+
+        // Obtener imagen una sola vez para este tipo
+        const imagen = await this._getImagenByTipo(tipo);
 
         // Filtrar por tipo sin ordenar (para evitar índice compuesto)
         const snapshot = await db.collection(collection)
@@ -87,6 +131,7 @@ const EventoService = {
         const eventos = snapshot.docs.map(doc => ({
             id: doc.id,
             ...this._serializeEvento(doc.data()),
+            imagen,
             _fechaTimestamp: doc.data().fecha
         }));
 
@@ -105,6 +150,9 @@ const EventoService = {
 
         const ahora = new Date();
         
+        // Obtener imagen una sola vez para este tipo
+        const imagen = await this._getImagenByTipo(tipo);
+        
         // Solo filtrar por tipo, luego filtrar y ordenar en memoria
         const snapshot = await db.collection(collection)
             .where('tipo-evento', '==', tipo)
@@ -115,6 +163,7 @@ const EventoService = {
             .map(doc => ({
                 id: doc.id,
                 ...this._serializeEvento(doc.data()),
+                imagen,
                 _fechaTimestamp: doc.data().fecha
             }))
             .filter(evento => {
@@ -138,9 +187,14 @@ const EventoService = {
         if (!doc.exists) {
             throw new Error("Evento no encontrado");
         }
+        
+        const data = doc.data();
+        const imagen = await this._getImagenByTipo(data['tipo-evento']);
+        
         return {
             id: doc.id,
-            ...this._serializeEvento(doc.data())
+            ...this._serializeEvento(data),
+            imagen
         };
     },
 
@@ -150,6 +204,7 @@ const EventoService = {
         
         if (data.Título !== undefined) updatedData['Título'] = data.Título;
         if (data.hora !== undefined) updatedData.hora = data.hora;
+        if (data.descripcion !== undefined) updatedData.descripcion = data.descripcion;
         if (data['tipo-evento'] !== undefined) {
             if (!TIPOS_EVENTO.includes(data['tipo-evento'])) {
                 throw new Error(`Tipo inválido. Debe ser: ${TIPOS_EVENTO.join(', ')}`);
