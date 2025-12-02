@@ -46,9 +46,40 @@ export const obtenerRecorridoYEstaciones = async (procesionId) => {
     });
   }
 
+  // Obtener relevos de esta procesión
+  const procesionRef = db.collection("procesiones").doc(procesionId);
+  const relevosSnap = await db
+    .collection("relevos")
+    .where("idProcesion", "==", procesionRef)
+    .get();
+
+  const relevos = [];
+
+  for (const doc of relevosSnap.docs) {
+    const relevoData = doc.data();
+
+    // Expandir referencias
+    const grupoAnterior = relevoData.grupoAnterior ? await relevoData.grupoAnterior.get() : null;
+    const grupoNuevo = relevoData.grupoNuevo ? await relevoData.grupoNuevo.get() : null;
+    const imagen = relevoData.idImagen ? await relevoData.idImagen.get() : null;
+
+    relevos.push({
+      id: doc.id,
+      grupoAnterior: grupoAnterior?.exists ? { id: grupoAnterior.id, ...grupoAnterior.data() } : null,
+      grupoNuevo: grupoNuevo?.exists ? { id: grupoNuevo.id, ...grupoNuevo.data() } : null,
+      idImagen: imagen?.exists ? { id: imagen.id, ...imagen.data() } : null,
+      ubicacion: relevoData.ubicacion ? {
+        latitude: relevoData.ubicacion._latitude,
+        longitude: relevoData.ubicacion._longitude
+      } : null,
+      completado: relevoData.completado || false
+    });
+  }
+
   return {
     recorrido,
     estaciones,
+    relevos,
     activo: procesionData.activo || false,
   };
 };
