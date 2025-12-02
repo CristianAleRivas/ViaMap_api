@@ -18,6 +18,47 @@ const GruposService = {
         const snapshot = await db.collection(collection).get();
         return snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
     },
+
+    async getByCategoria(categoria){
+        if (!['masculino', 'femenino'].includes(categoria.toLowerCase())) {
+            throw new Error("Categoría inválida. Debe ser 'masculino' o 'femenino'");
+        }
+
+        const snapshot = await db.collection(collection)
+            .where('categoria', '==', categoria.toLowerCase())
+            .get();
+        
+        return snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+    },
+
+    async getByHermandad(nombreHermandad){
+        if (!nombreHermandad) {
+            throw new Error("El nombre de la hermandad es requerido");
+        }
+
+        const snapshot = await db.collection(collection)
+            .where('nombreHermandad', '==', nombreHermandad)
+            .get();
+        
+        return snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+    },
+
+    async getByHermandadAndCategoria(nombreHermandad, categoria){
+        if (!nombreHermandad) {
+            throw new Error("El nombre de la hermandad es requerido");
+        }
+        
+        if (!['masculino', 'femenino'].includes(categoria.toLowerCase())) {
+            throw new Error("Categoría inválida. Debe ser 'masculino' o 'femenino'");
+        }
+
+        const snapshot = await db.collection(collection)
+            .where('nombreHermandad', '==', nombreHermandad)
+            .where('categoria', '==', categoria.toLowerCase())
+            .get();
+        
+        return snapshot.docs.map(doc => ({id: doc.id, ...doc.data()}));
+    },
     
     async getById(id){
         const doc = await db.collection(collection).doc(id).get();
